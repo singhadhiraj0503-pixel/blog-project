@@ -66,6 +66,7 @@ import { Search, PenLine, Sparkles, Command } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "../ui/button";
 import UserMenu from "../auth/user-menu";
+import ThemeToggle from "../theme/theme-toggle";
 
 type Props = {};
 
@@ -138,6 +139,7 @@ const Header = (props: Props) => {
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
           {/* Login Button */}
+          <ThemeToggle />
           {/* <Button
             onClick={() => router.push("/auth")}
             className="relative group overflow-hidden rounded tracking-wide focus:outline-none cursor-pointer px-4 py-2 text-[0.9rem] font-semibold"
