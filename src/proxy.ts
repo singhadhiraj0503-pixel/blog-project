@@ -1,31 +1,74 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
-export function proxy(request: NextRequest) {
-  const sessionCookie = getSessionCookie(request);
-
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  /*
+   * Routes that require authentication
+   */
   const isProtectedRoute =
     pathname === "/" ||
-    pathname.startsWith("/post") ||
-    pathname.startsWith("/profile");
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/post/create") ||
+    pathname.startsWith("/post/edit");
 
+  /*
+   * Routes that should only be accessible
+   * when the user is NOT logged in.
+   */
   const isAuthRoute = pathname.startsWith("/auth");
 
-  // No session → protected route → /auth
-  if (isProtectedRoute && !sessionCookie) {
+  /*
+   * Get the current Better Auth session.
+   *
+   * This checks the actual session and therefore
+   * handles expired/invalid sessions as well.
+   */
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const isLoggedIn = !!session;
+
+  /*
+   * ------------------------------------------------
+   * CASE 1:
+   * User is NOT logged in
+   * AND tries to access a protected route.
+   * ------------------------------------------------
+   */
+  if (isProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 
-  // Session exists → /auth → homepage
-  if (isAuthRoute && sessionCookie) {
+  /*
+   * ------------------------------------------------
+   * CASE 2:
+   * User IS logged in
+   * AND tries to access /auth.
+   * ------------------------------------------------
+   */
+  if (isAuthRoute && isLoggedIn) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  /*
+   * ------------------------------------------------
+   * CASE 3:
+   * Everything is allowed.
+   * ------------------------------------------------
+   */
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/auth/", "/post/create", "/post/edit/:path*"],
+  matcher: [
+    "/",
+    "/auth/:path*",
+    "/profile/:path*",
+    "/post/create/:path*",
+    "/post/edit/:path*",
+  ],
 };
