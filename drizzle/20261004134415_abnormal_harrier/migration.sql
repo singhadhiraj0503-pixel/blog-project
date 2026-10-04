@@ -1,0 +1,1 @@
+ALTER TABLE "verification" ADD COLUMN "updated_at" timestamp(6) with time zone NOT NULL;
