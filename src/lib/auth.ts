@@ -6,7 +6,7 @@ import { schema } from "./db/schema";
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
     minPasswordLength: 6,
     maxPasswordLength: 128,
     autoSignIn: false,
