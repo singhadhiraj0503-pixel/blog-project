@@ -63,10 +63,15 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, PenLine, Sparkles, Command } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
+import { Button } from "../ui/button";
+import UserMenu from "../auth/user-menu";
 
 type Props = {};
 
 const Header = (props: Props) => {
+  const { data: session, isPending } = useSession();
+
   const router = useRouter();
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -132,16 +137,23 @@ const Header = (props: Props) => {
 
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
-          {/* Login Button with Glow Micro-interaction */}
-          <button
+          {/* Login Button */}
+          {/* <Button
             onClick={() => router.push("/auth")}
-            className="relative group overflow-hidden rounded-full p-px font-medium text-xs tracking-wide focus:outline-none cursor-pointer"
+            className="relative group overflow-hidden rounded tracking-wide focus:outline-none cursor-pointer px-4 py-2 text-[0.9rem] font-semibold"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-zinc-700 via-zinc-400 to-zinc-700 opacity-60 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
-            <span className="relative flex items-center justify-center px-4 py-1.5 rounded-full bg-zinc-950 text-zinc-100 group-hover:bg-zinc-900/90 transition-colors duration-200">
+            Sign In
+          </Button> */}
+          {isPending ? null : session?.user ? (
+            <UserMenu user={session?.user} />
+          ) : (
+            <Button
+              onClick={() => router.push("/auth")}
+              className="relative group overflow-hidden rounded tracking-wide focus:outline-none cursor-pointer px-4 py-2 text-[0.9rem] font-semibold"
+            >
               Sign In
-            </span>
-          </button>
+            </Button>
+          )}
         </div>
       </div>
     </header>
