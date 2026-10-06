@@ -8,8 +8,6 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { title } from "process";
-import { error } from "console";
 import { createPost } from "@/actions/post-action";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -68,51 +66,152 @@ const PostForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} action="" className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
+    <form onSubmit={handleSubmit(onFormSubmit)} action="" className="space-y-5">
+      {/* Title */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <Label
+            htmlFor="title"
+            className="text-sm font-medium text-foreground"
+          >
+            Title
+          </Label>
+
+          <span className="text-xs text-muted-foreground">0 / 255</span>
+        </div>
+
         <Input
           id="title"
           placeholder="Enter post title"
           {...register("title")}
           disabled={isPending}
+          className="
+            h-11
+            rounded-xl
+            border-border
+            bg-background
+            px-4
+            text-sm
+            text-foreground
+            shadow-none
+            placeholder:text-muted-foreground
+            focus-visible:border-ring
+            focus-visible:ring-1
+            focus-visible:ring-ring
+          "
         />
+
         {errors?.title && (
           <p className="text-sm text-red-500">{errors.title.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+      {/* Description */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <Label
+            htmlFor="description"
+            className="text-sm font-medium text-foreground"
+          >
+            Description
+          </Label>
+
+          <span className="text-xs text-muted-foreground">0 / 255</span>
+        </div>
+
         <Textarea
           id="description"
           placeholder="Write your description"
           {...register("description")}
           disabled={isPending}
+          className="
+            min-h-24
+            resize-none
+            rounded-xl
+            border-border
+            bg-background
+            px-4
+            py-2
+            text-sm
+            leading-6
+            text-foreground
+            shadow-none
+            placeholder:text-muted-foreground
+            focus-visible:border-ring
+            focus-visible:ring-1
+            focus-visible:ring-ring
+          "
         />
+
         {errors?.description && (
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="content">Content</Label>
+      {/* Content */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <Label
+            htmlFor="content"
+            className="text-sm font-medium text-foreground"
+          >
+            Content
+          </Label>
+
+          <span className="text-xs text-muted-foreground">
+            min 10 characters
+          </span>
+        </div>
+
         <Textarea
           id="content"
-          className="min-h-60 resize-none"
+          className="
+            min-h-[180px]
+            resize-none
+            rounded-xl
+            border-border
+            bg-background
+            px-4
+            py-3
+            text-sm
+            leading-7
+            text-foreground
+            shadow-none
+            placeholder:text-muted-foreground
+            focus-visible:border-ring
+            focus-visible:ring-1
+            focus-visible:ring-ring
+            sm:min-h-[250px]
+          "
           placeholder="Start writing your content ..."
           {...register("content")}
           disabled={isPending}
         />
+
         {errors?.content && (
           <p className="text-sm text-red-500">{errors.content.message}</p>
         )}
       </div>
 
+      {/* Submit */}
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full py-2 text-[1rem]"
+        className="
+          h-11
+          w-full
+          rounded-xl
+          bg-primary
+          text-sm
+          font-medium
+          text-primary-foreground
+          shadow-sm
+          transition-all
+          hover:opacity-90
+          active:scale-[0.99]
+          disabled:cursor-not-allowed
+          disabled:opacity-60
+        "
       >
         {isPending ? "Saving Post..." : "Create Post"}
       </Button>
