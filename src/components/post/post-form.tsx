@@ -10,6 +10,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { title } from "process";
 import { error } from "console";
+import { createPost } from "@/actions/post-action";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const postSchema = z.object({
   title: z
@@ -25,8 +28,9 @@ const postSchema = z.object({
 
 type PostFormValues = z.infer<typeof postSchema>;
 
-const PostForm = (props: Props) => {
+const PostForm = () => {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const {
     register,
@@ -42,7 +46,25 @@ const PostForm = (props: Props) => {
   });
 
   const onFormSubmit = async (data: PostFormValues) => {
-    console.log(data);
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("title", data.title);
+        formData.append("description", data.description);
+        formData.append("content", data.content);
+
+        const res = await createPost(formData);
+        console.log(res);
+
+        if (res.success) {
+          toast("Post created Successfully");
+          router.refresh();
+          router.push("/");
+        }
+      } catch (error) {
+        toast("Failed to create a new post");
+      }
+    });
   };
 
   return (

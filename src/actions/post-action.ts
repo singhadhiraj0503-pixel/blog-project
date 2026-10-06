@@ -1,7 +1,13 @@
-"user server";
+"use server";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { slugify } from "@/lib/utils";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import z from "zod";
+import { posts } from "@/lib/db/schema";
+import { revalidatePath } from "next/cache";
 
 const postSchema = z.object({
   title: z
@@ -36,9 +42,7 @@ export const createPost = async (formData: FormData) => {
     const description = formData.get("description") as string;
     const content = formData.get("content") as string;
 
-    // ---------------------------------------
-    // 3. Validate form data on server
-    // ---------------------------------------
+    // Validate form data on server
 
     const validation = postSchema.safeParse({
       title,
@@ -54,9 +58,7 @@ export const createPost = async (formData: FormData) => {
       };
     }
 
-    // ---------------------------------------
-    // 4. Use validated data
-    // ---------------------------------------
+    // Use validated data
 
     const {
       title: validatedTitle,
@@ -70,5 +72,50 @@ export const createPost = async (formData: FormData) => {
       content: validatedContent,
       userId: session.user.id,
     });
-  } catch (error) {}
+
+    // create slug from post title
+    const slug = slugify(validatedTitle);
+
+    // check if the current slug already exists
+    const existingPost = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.slug, slug))
+      .limit(1);
+
+    if (existingPost.length > 0) {
+      return {
+        success: false,
+        message:
+          "A post with the same title already exists! Please try with a different title",
+      };
+    }
+
+    const [newPost] = await db
+      .insert(posts)
+      .values({
+        title: validatedTitle,
+        description: validatedDescription,
+        content: validatedContent,
+        slug,
+        authorId: session.user.id,
+      })
+      .returning();
+
+    // revalidate to homepage to get the latest posts
+    revalidatePath("/");
+    revalidatePath(`/post/${slug}`);
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "Post created successfully",
+      slug,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Failed to create new post",
+    };
+  }
 };

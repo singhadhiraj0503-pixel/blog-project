@@ -131,7 +131,7 @@ export const verification = pgTable("verification", {
 
 export const usersRelations = relations(posts, ({ one }) => ({
   author: one(users, {
-    fields: [posts.aurhorId],
+    fields: [posts.authorId],
     references: [users.id],
   }),
 }));
@@ -139,7 +139,7 @@ export const usersRelations = relations(posts, ({ one }) => ({
 // one author (user) per post
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, {
-    fields: [posts.aurhorId],
+    fields: [posts.authorId],
     references: [users.id],
   }),
 }));
