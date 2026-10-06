@@ -1,3 +1,4 @@
+import PostContent from "@/components/post/post-content";
 import { auth } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/db/queries";
 import { headers } from "next/headers";
@@ -23,7 +24,13 @@ const PostDetailsPage = async ({
   // get author information
   const isAuthor = session?.user?.id === post.authorId;
 
-  return <div>PostDetailsPage</div>;
+  return (
+    <main className="py-10">
+      <div className="max-w-4xl mx-auto">
+        <PostContent />
+      </div>
+    </main>
+  );
 };
 
 export default PostDetailsPage;
