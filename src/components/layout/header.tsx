@@ -11,7 +11,6 @@ import { Button } from "../ui/button";
 import UserMenu from "../auth/user-menu";
 import ThemeToggle from "../theme/theme-toggle";
 
-type Props = {};
 
 const Header = (props: Props) => {
   const { data: session, isPending } = useSession();

@@ -160,4 +160,14 @@ export const sessionsRelation = relations(sessions, ({ one }) => ({
   }),
 }));
 
-export const schema = { users, sessions, accounts, posts, verification };
+export const schema = {
+  users,
+  sessions,
+  accounts,
+  posts,
+  verification,
+  usersRelations,
+  postsRelations,
+  accountsRelations,
+  sessionsRelation,
+};
