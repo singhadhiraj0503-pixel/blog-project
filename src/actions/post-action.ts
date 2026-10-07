@@ -232,3 +232,78 @@ export const updatePost = async (postId: number, formData: FormData) => {
     };
   }
 };
+
+export const deletePost = async (postId: number) => {
+  try {
+    // get the current user from the session
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !session.user) {
+      return {
+        success: false,
+        message: "You must be logged in to delete a post",
+      };
+    }
+
+    // Check whether the post exists
+    const [existingPost] = await db
+      .select({
+        id: posts.id,
+        slug: posts.slug,
+        authorId: posts.authorId,
+      })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    if (!existingPost) {
+      return {
+        success: false,
+        message: "Post not found",
+      };
+    }
+
+    // Check whether the current user owns the post
+    if (existingPost.authorId !== session.user.id) {
+      return {
+        success: false,
+        message: "You are not authorized to delete this post",
+      };
+    }
+
+    // Delete the post
+    const [deletedPost] = await db
+      .delete(posts)
+      .where(eq(posts.id, postId))
+      .returning({
+        id: posts.id,
+        slug: posts.slug,
+      });
+
+    // Make sure the post was actually deleted
+    if (!deletedPost) {
+      return {
+        success: false,
+        message: "Failed to delete the post",
+      };
+    }
+
+    // revalidate to homepage after a post is deleted
+    revalidatePath("/");
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "Post deleted Successfully",
+    };
+  } catch (error) {
+    console.error("Failed to delete post:", error);
+
+    return {
+      success: false,
+      message: "Failed to delete the post",
+    };
+  }
+};
