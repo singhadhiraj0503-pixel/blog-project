@@ -8,9 +8,10 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createPost } from "@/actions/post-action";
+import { createPost, updatePost } from "@/actions/post-action";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { PostFormProps } from "@/lib/types";
 
 const postSchema = z.object({
   title: z
@@ -26,7 +27,7 @@ const postSchema = z.object({
 
 type PostFormValues = z.infer<typeof postSchema>;
 
-const PostForm = () => {
+const PostForm = ({ isEditing, post }: PostFormProps) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -36,11 +37,18 @@ const PostForm = () => {
     formState: { errors },
   } = useForm<PostFormValues>({
     resolver: zodResolver(postSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      content: "",
-    },
+    defaultValues:
+      isEditing && post
+        ? {
+            title: post.title,
+            description: post.description,
+            content: post.content,
+          }
+        : {
+            title: "",
+            description: "",
+            content: "",
+          },
   });
 
   const onFormSubmit = async (data: PostFormValues) => {
@@ -51,11 +59,20 @@ const PostForm = () => {
         formData.append("description", data.description);
         formData.append("content", data.content);
 
-        const res = await createPost(formData);
-        console.log(res);
+        let res;
+
+        if (isEditing && post) {
+          res = await updatePost(post.id, formData);
+        } else {
+          res = await createPost(formData);
+        }
 
         if (res.success) {
-          toast("Post created Successfully");
+          toast(
+            isEditing
+              ? "Post Updated Successfully"
+              : "Post created Successfully",
+          );
           router.refresh();
           router.push("/");
         }
@@ -213,7 +230,11 @@ const PostForm = () => {
           disabled:opacity-60
         "
       >
-        {isPending ? "Saving Post..." : "Create Post"}
+        {isPending
+          ? "Saving Post..."
+          : isEditing
+            ? "Update Post"
+            : "Create post"}
       </Button>
     </form>
   );

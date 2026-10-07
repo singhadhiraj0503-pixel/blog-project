@@ -46,3 +46,14 @@ export interface PostContentProps {
 export interface DeletePostButtonProps {
   postId: number;
 }
+
+export interface PostFormProps {
+  isEditing?: boolean;
+  post?: {
+    id: number;
+    title: string;
+    description: string;
+    content: string;
+    slug: string;
+  };
+}

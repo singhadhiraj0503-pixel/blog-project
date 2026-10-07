@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { headers } from "next/headers";
 import z from "zod";
 import { posts } from "@/lib/db/schema";
@@ -116,6 +116,119 @@ export const createPost = async (formData: FormData) => {
     return {
       success: false,
       message: "Failed to create new post",
+    };
+  }
+};
+
+export const updatePost = async (postId: number, formData: FormData) => {
+  try {
+    // get the current user
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !session.user) {
+      return {
+        success: false,
+        message: "You must be logged in to edit a post",
+      };
+    }
+
+    // get the form data
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const content = formData.get("content") as string;
+
+    // implement extra validation check
+    const validation = postSchema.safeParse({
+      title,
+      description,
+      content,
+    });
+
+    if (!validation.success) {
+      return {
+        success: false,
+        message: "Please fix the validation errors",
+        errors: validation.error.flatten().fieldErrors,
+      };
+    }
+
+    const {
+      title: validatedTitle,
+      description: validatedDescription,
+      content: validatedContent,
+    } = validation.data;
+
+    // generate slug from updated title
+    const slug = slugify(validatedTitle);
+
+    // Check if ANOTHER post already uses this slug
+    const [duplicatePost] = await db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(and(eq(posts.slug, slug), ne(posts.id, postId)))
+      .limit(1);
+
+    if (duplicatePost) {
+      return {
+        success: false,
+        message:
+          "A post with the same title already exists! Please try with a different title",
+      };
+    }
+
+    // Check whether the post exists
+    const [existingPost] = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    if (!existingPost) {
+      return {
+        success: false,
+        message: "Post not found",
+      };
+    }
+
+    // Make sure the logged-in user owns this post
+    if (existingPost.authorId !== session.user.id) {
+      return {
+        success: false,
+        message: "You are not authorized to edit this post",
+      };
+    }
+
+    // Update the post
+    const [updatedPost] = await db
+      .update(posts)
+      .set({
+        title: validatedTitle,
+        description: validatedDescription,
+        content: validatedContent,
+        slug: slug,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(posts.id, postId), eq(posts.authorId, session.user.id)))
+      .returning();
+
+    // revalidate to homepage to get the latest posts
+    revalidatePath("/");
+    revalidatePath(`/post/${slug}`);
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "Post Updated Successfully",
+      slug,
+    };
+  } catch (error) {
+    console.log("failed to edit", error);
+
+    return {
+      success: false,
+      message: "Failed to Update the post",
     };
   }
 };
