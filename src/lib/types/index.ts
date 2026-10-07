@@ -7,6 +7,7 @@ export interface PostListProps {
     createdAt: Date;
     author: {
       name: string;
+      image: string;
     };
   }>;
 }
@@ -20,6 +21,28 @@ export interface PostCardProps {
     createdAt: Date;
     author: {
       name: string;
+      image: string;
     };
   };
+}
+
+export interface PostContentProps {
+  post: {
+    id: number;
+    title: string;
+    description: string;
+    content: string;
+    slug: string;
+    createdAt: Date;
+    updatedAt: Date;
+    author: {
+      name: string;
+      image: string;
+    };
+  };
+  isAuthor: boolean;
+}
+
+export interface DeletePostButtonProps {
+  postId: number;
 }
