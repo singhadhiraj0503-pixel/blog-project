@@ -65,27 +65,10 @@ const PostContent = ({ post, isAuthor }: PostContentProps) => {
       {isAuthor && (
         <CardFooter>
           <div className="flex gap-2">
-            <Button
-              asChild
-              size="sm"
-              className="
-    h-9
-    rounded-md
-    border
-    border-border
-    bg-muted
-    px-3
-    text-sm
-    font-medium
-    text-foreground
-    shadow-none
-    hover:bg-accent
-    hover:text-foreground
-  "
-            >
-              <Link href={`/post/edit/${post.slug}`}>
-                <Pencil className="mr-2 size-4" />
-                Edit
+            <Button asChild variant="outline" size="sm">
+              <Link className="flex" href={`/post/edit/${post.slug}`}>
+                <Pencil className="size-4 mr-2" />
+                <span>Edit</span>
               </Link>
             </Button>
 
